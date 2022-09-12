@@ -1,0 +1,9 @@
+postgres:
+  container_name: "nasa-facilities"
+  image: "postgres:latest"
+  ports:
+    - "5432:5432"
+  environment:
+    POSTGRES_USERNAME: "${POSTGRES_USERNAME}"
+    POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    POSTGRES_DATABASE: "${POSTGRES_DATABASE}" 
