@@ -4,7 +4,7 @@ import './App.css';
 
 function App() {
   useEffect(() => {
-    fetch("/ping")
+    fetch("/")
       .then(res => res.json())
       .then(
         (result) => {
