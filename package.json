@@ -5,6 +5,10 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@types/react-router-dom": "5.3",
     "lerna": "^5.5.1"
+  },
+  "dependencies": {
+    "react-router-dom": "^6.4.1"
   }
 }

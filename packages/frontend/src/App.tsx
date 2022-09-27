@@ -1,44 +1,38 @@
-import React, { useEffect } from "react";
-import logo from "./logo.svg";
+import { FormEvent, useEffect, useState } from "react";
 import "./App.css";
+import Facilities from "./components/facilities";
+import { Login } from "./components/login";
+
+interface IAuthResp {
+  authed: boolean;
+}
 
 function App() {
-  useEffect(() => {
-    fetch("/")
-      .then((res) => {
-        console.log("res: ", res);
-        res.json();
-      })
-      .then(
-        (result) => {
-          console.log("result: ", result);
-        },
-        // Note: it's important to handle errors here
-        // instead of a catch() block so that we don't swallow
-        // exceptions from actual bugs in components.
-        (error) => {
-          console.log({ error });
-        }
-      );
-  }, []);
+  const [auth, setAuth] = useState<IAuthResp>({ authed: true });
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    console.log({ auth });
+
+    // setIsAuthenticating(true);
+    // history.push("/login");
+    //TODO: Call API & set authenticated to true if there are no errors
+  };
+
+  return auth?.authed ? (
+    <Facilities />
+  ) : (
+    <Login
+      handleSubmit={handleSubmit}
+      username={username}
+      password={password}
+      handleSetUsername={setUsername}
+      handleSetPassword={setPassword}
+    />
   );
 }
 
