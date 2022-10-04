@@ -1,15 +1,20 @@
 import fastifyPostgres from "@fastify/postgres";
 import fastifyPassport from "@fastify/passport";
 import fastifySecureSession from "@fastify/secure-session";
-import Fastify, { FastifyInstance } from "fastify";
+import Fastify, { FastifyInstance, RouteShorthandOptions } from "fastify";
 import * as dotenv from "dotenv";
 import path from "path";
 import * as fs from "fs";
+import axios from "axios";
+import cors from "@fastify/cors";
+import { JWTVerifier } from "./util/jwtVerifier";
+import authRoutes from "./routes/auth";
+import facilitiesRoutes from "./routes/facilities";
 
-var OktaStrategy = require("passport-okta-oauth").Strategy;
+var { Strategy } = require("passport-openidconnect");
 dotenv.config();
 
-const server: FastifyInstance = Fastify({
+const fastify: FastifyInstance = Fastify({
   logger: {
     serializers: {
       res(reply) {
@@ -27,72 +32,125 @@ const server: FastifyInstance = Fastify({
   },
 });
 
-server.register(fastifySecureSession, {
+//TODO: fix CORS errors
+fastify.register(cors, (instance) => {
+  return (req, callback) => {
+    const corsOptions = {
+      // This is NOT recommended for production as it enables reflection exploits
+      origin: true,
+      allowedHeaders: [
+        "Origin",
+        "X-Requested-With",
+        "Accept",
+        "Content-Type",
+        "Authorization",
+      ],
+      methods: ["GET", "PUT", "PATCH", "POST", "DELETE"],
+    };
+
+    // do not include CORS headers for requests from localhost
+    if (/^localhost$/m.test(req.headers.origin || "")) {
+      corsOptions.origin = false;
+    }
+
+    // callback expects two parameters: error and options
+    callback(null, corsOptions);
+  };
+});
+
+fastify.register(fastifySecureSession, {
   key: fs.readFileSync(path.join(__dirname, "..", "secret-key")),
 });
-server.register(fastifyPassport.initialize());
-server.register(fastifyPassport.secureSession());
+fastify.register(fastifyPassport.initialize());
+fastify.register(fastifyPassport.secureSession());
 
-fastifyPassport.use(
-  "oktaAuth",
-  new OktaStrategy(
-    {
-      audience: process.env.OKTA_AUDIENCE,
-      clientID: process.env.OKTA_CLIENT_ID,
-      clientSecret: process.env.OKTA_CLIENT_SECRET,
-      scope: ["openid", "email", "profile"],
-      // callbackURL: process.env.OKTA_BASE_URI + "/",
-    },
-    async (
-      accessToken: any,
-      refreshToken: any,
-      profile: any,
-      cb: (arg0: unknown, arg1: unknown) => void
-    ) => {
-      try {
-        cb(null, profile);
-      } catch (err) {
-        cb(err, null);
-      }
+axios
+  .get(`${process.env.OKTA_ISSUER}/.well-known/openid-configuration`)
+  .then((res) => {
+    if (res.status == 200) {
+      let {
+        issuer,
+        authorization_endpoint,
+        token_endpoint,
+        userinfo_endpoint,
+        end_session_endpoint,
+      } = res.data;
+
+      fastifyPassport.use(
+        "oidc",
+        new Strategy(
+          {
+            issuer,
+            authorizationURL: authorization_endpoint,
+            tokenURL: token_endpoint,
+            userInfoURL: userinfo_endpoint,
+            clientID: process.env.OKTA_CLIENT_ID,
+            clientSecret: process.env.OKTA_CLIENT_SECRET,
+            callbackURL: "http://localhost:3000/authorization-code/callback",
+            scope: ["openid", "email", "profile"],
+          },
+          async (
+            issuer: any,
+            profile: any,
+            context: any,
+            idToken: any,
+            accessToken: any,
+            refreshToken: any,
+            params: any,
+            done: (arg0: any, arg1: any) => any
+          ) => {
+            try {
+              console.log(
+                `OIDC response: ${JSON.stringify(
+                  {
+                    issuer,
+                    profile,
+                    context,
+                    idToken,
+                    accessToken,
+                    refreshToken,
+                    params,
+                  },
+                  null,
+                  2
+                )}\n*****`
+              );
+
+              return done(null, profile);
+            } catch (err) {
+              done(err, null);
+            }
+          }
+        )
+      );
+    } else {
+      console.log(
+        `Unable to reach the well-known endpoint. Are you sure that the ORG_URL you provided (${process.env.OKTA_ISSUER}) is correct?`
+      );
     }
-  )
-);
+  })
+  .catch((error) => {
+    console.error(error);
+  });
 
-server.register(fastifyPostgres, {
+//TODO: use user?
+fastifyPassport.registerUserSerializer(async (user: any, request) => user.id);
+fastifyPassport.registerUserDeserializer(async (id, request) => {
+  return await console.log({ id });
+});
+
+fastify.register(fastifyPostgres, {
   connectionString: process.env.CONNECTION_STRING,
 });
 
-server.get("/facilities", async () => {
-  const client = await server.pg.connect();
-  let facilities: any = [];
-
-  try {
-    const { rows } = await client.query("SELECT * FROM facilities");
-    if (rows.length == 0) throw new Error("No facilities found");
-
-    facilities = rows;
-  } finally {
-    client.release();
-  }
-
-  return facilities;
-});
-
-server.post(
-  "/login",
-  {
-    preValidation: fastifyPassport.authenticate("oktaAuth", {
-      authInfo: false,
-    }),
-  },
-  () => {}
-);
+fastify.register(authRoutes);
+fastify.register(facilitiesRoutes);
 
 const start = async () => {
   try {
-    await server.listen({ port: 3000 });
+    await fastify.listen({ port: 3000 });
   } catch (err) {
-    server.log.error(err);
+    fastify.log.error(err);
     process.exit(1);
   }
 };

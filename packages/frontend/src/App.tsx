@@ -8,31 +8,36 @@ interface IAuthResp {
 }
 
 function App() {
-  const [auth, setAuth] = useState<IAuthResp>({ authed: true });
+  const [auth, setAuth] = useState<IAuthResp>({ authed: false });
   const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    console.log({ auth });
-
-    // setIsAuthenticating(true);
-    // history.push("/login");
-    //TODO: Call API & set authenticated to true if there are no errors
+    setIsAuthenticating(true);
   };
+
+  useEffect(() => {
+    fetch("/auth")
+      .then((res) => {
+        res.json();
+      })
+      .then(
+        (result) => {
+          console.log({ result });
+          // setAuth(result);
+          setIsAuthenticating(false);
+        },
+
+        (errors) => {
+          console.log({ errors });
+        }
+      );
+  }, [isAuthenticating]);
 
   return auth?.authed ? (
     <Facilities />
   ) : (
-    <Login
-      handleSubmit={handleSubmit}
-      username={username}
-      password={password}
-      handleSetUsername={setUsername}
-      handleSetPassword={setPassword}
-    />
+    <Login handleSubmit={() => handleSubmit} />
   );
 }
 
