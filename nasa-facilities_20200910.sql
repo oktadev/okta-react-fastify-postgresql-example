@@ -30,8 +30,12 @@ CREATE TABLE public.facilities (
     "Status" character varying(25),
     "URL Link" character varying(250),
     "City" character varying(25) NOT NULL,
-    "State" character varying(2) NOT NULL
+    "State" character varying(2) NOT NULL,
+    "Visited" boolean NOT NULL
 );
+
+ALTER TABLE public.facilities ALTER COLUMN "Visited" SET NOT NULL,
+                     ALTER COLUMN "Visited" SET DEFAULT false;
 
 
 ALTER TABLE public.facilities OWNER TO postgres;

@@ -1,13 +1,27 @@
+import { useOktaAuth } from "@okta/okta-react";
 import "../App.css";
+import Facilities from "./facilities";
 
-interface Props {
-  handleSubmit: () => void;
-}
+export function Login() {
+  const { authState, oktaAuth } = useOktaAuth();
 
-export function Login({ handleSubmit }: Props) {
-  return (
+  const handleLogin = async () => {
+    await oktaAuth.signInWithRedirect();
+  };
+
+  const customAuthHandler = async () => {
+    const previousAuthState = oktaAuth.authStateManager.getPreviousAuthState();
+    console.log({ previousAuthState });
+    if (!previousAuthState || !previousAuthState.isAuthenticated) {
+      await handleLogin();
+    }
+  };
+
+  return authState?.isAuthenticated ? (
+    <Facilities />
+  ) : (
     <div className="form-wrapper">
-      <form onSubmit={() => handleSubmit}>
+      <form onSubmit={customAuthHandler}>
         <h2>Welcome Back!</h2>
         <input type="submit" value="Login" />
       </form>

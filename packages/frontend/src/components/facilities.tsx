@@ -1,3 +1,4 @@
+import { useOktaAuth } from "@okta/okta-react";
 import { useEffect, useState } from "react";
 
 interface IFacility {
@@ -6,32 +7,53 @@ interface IFacility {
   Status: string;
   City: string;
   State: string;
+  Visited: boolean;
 }
 
 function Facilities() {
-  const [isLoaded, setIsLoaded] = useState(false);
   const [data, setData] = useState<IFacility[]>();
   const [errors, setErrors] = useState();
+  const { authState, oktaAuth } = useOktaAuth();
+
+  const logout = async () => {
+    try {
+      await oktaAuth.signOut();
+    } catch (err) {
+      throw err;
+    }
+  };
 
   useEffect(() => {
-    fetch("/facilities")
-      .then((res) => res.json())
-      .then(
-        (result) => {
-          console.log({ result });
-          setIsLoaded(true);
-          setData(result);
-        },
-
-        (errors) => {
+    if (authState?.isAuthenticated) {
+      const apiCall = async () => {
+        try {
+          const response = await fetch("/facilities", {
+            headers: {
+              Authorization: "Bearer " + authState.accessToken?.accessToken,
+            },
+          });
+          const data = await response.json();
+          setData(data);
+        } catch (errors: any) {
           setErrors(errors);
         }
-      );
-  }, []);
+      };
+      apiCall();
+    }
+  }, [authState]);
 
-  if (isLoaded && !errors) {
+  const visitedClick = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
+    console.log("clicked");
+  };
+
+  console.log({ data });
+
+  if (data && !errors) {
     return (
       <div className="facilities-wrapper">
+        <button onClick={logout} className="logout-button">
+          Logout
+        </button>
         <h1>NASA Facilities</h1>
         {data ? (
           <table className="facilities-table">
@@ -42,6 +64,7 @@ function Facilities() {
                 <th>Status</th>
                 <th>City</th>
                 <th>State</th>
+                <th>Visited</th>
               </tr>
             </thead>
             <tbody>
@@ -53,6 +76,13 @@ function Facilities() {
                     <td>{facility.Status}</td>
                     <td>{facility.City}</td>
                     <td>{facility.State}</td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={facility.Visited}
+                        onClick={(e) => visitedClick(e)}
+                      />
+                    </td>
                   </tr>
                 );
               })}
