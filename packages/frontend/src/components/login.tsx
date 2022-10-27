@@ -1,27 +1,16 @@
-import { useOktaAuth } from "@okta/okta-react";
+import { useNavigate } from "react-router-dom";
 import "../App.css";
-import Facilities from "./facilities";
 
 export function Login() {
-  const { authState, oktaAuth } = useOktaAuth();
+  const navigate = useNavigate();
 
-  const handleLogin = async () => {
-    await oktaAuth.signInWithRedirect();
+  const handleLoginClick = () => {
+    navigate("/facilities");
   };
 
-  const customAuthHandler = async () => {
-    const previousAuthState = oktaAuth.authStateManager.getPreviousAuthState();
-    console.log({ previousAuthState });
-    if (!previousAuthState || !previousAuthState.isAuthenticated) {
-      await handleLogin();
-    }
-  };
-
-  return authState?.isAuthenticated ? (
-    <Facilities />
-  ) : (
+  return (
     <div className="form-wrapper">
-      <form onSubmit={customAuthHandler}>
+      <form onSubmit={handleLoginClick}>
         <h2>Welcome Back!</h2>
         <input type="submit" value="Login" />
       </form>

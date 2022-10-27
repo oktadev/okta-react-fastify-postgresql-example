@@ -37,6 +37,8 @@ CREATE TABLE public.facilities (
 ALTER TABLE public.facilities ALTER COLUMN "Visited" SET NOT NULL,
                      ALTER COLUMN "Visited" SET DEFAULT false;
 
+ALTER TABLE public.facilities ADD id serial;
+
 
 ALTER TABLE public.facilities OWNER TO postgres;
 

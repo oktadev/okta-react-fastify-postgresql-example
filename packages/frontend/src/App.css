@@ -143,6 +143,7 @@ button:hover {
 input[type="checkbox"] {
   width: 48px;
   height: 20px;
+  cursor: pointer;
 }
 
 @keyframes Gradient {
@@ -155,4 +156,12 @@ input[type="checkbox"] {
   100% {
     background-position: 0% 50%;
   }
+}
+
+button.button-delete {
+  background-color: #fe2c54;
+  color: white;
+  font-weight: 700;
+  margin-bottom: 0;
+  min-width: unset;
 }

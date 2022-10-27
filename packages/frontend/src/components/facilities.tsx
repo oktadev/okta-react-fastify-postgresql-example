@@ -8,6 +8,7 @@ interface IFacility {
   City: string;
   State: string;
   Visited: boolean;
+  id: bigint;
 }
 
 function Facilities() {
@@ -42,11 +43,52 @@ function Facilities() {
     }
   }, [authState]);
 
-  const visitedClick = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
-    console.log("clicked");
+  const handleVisitedClick = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    facilityId: bigint
+  ) => {
+    const url = `/facilities/${facilityId}`;
+
+    if (authState?.isAuthenticated) {
+      const apiCall = async () => {
+        try {
+          await fetch(url, {
+            method: "PATCH",
+            headers: {
+              Authorization: "Bearer " + authState.accessToken?.accessToken,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ visited: e.target.checked }),
+          });
+        } catch (errors: any) {
+          setErrors(errors.message);
+        }
+      };
+      apiCall();
+    }
   };
 
-  console.log({ data });
+  const handleDeleteClick = (facilityId: bigint) => {
+    const url = `/facilities/${facilityId}`;
+
+    if (authState?.isAuthenticated) {
+      const apiCall = async () => {
+        try {
+          await fetch(url, {
+            method: "DELETE",
+            headers: {
+              Authorization: "Bearer " + authState.accessToken?.accessToken,
+            },
+          });
+
+          setData(data?.filter((row) => row.id !== facilityId));
+        } catch (errors: any) {
+          setErrors(errors.message);
+        }
+      };
+      apiCall();
+    }
+  };
 
   if (data && !errors) {
     return (
@@ -68,24 +110,34 @@ function Facilities() {
               </tr>
             </thead>
             <tbody>
-              {data.map((facility) => {
-                return (
-                  <tr key={facility.Facility}>
-                    <td>{facility.Center}</td>
-                    <td>{facility.Facility}</td>
-                    <td>{facility.Status}</td>
-                    <td>{facility.City}</td>
-                    <td>{facility.State}</td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={facility.Visited}
-                        onClick={(e) => visitedClick(e)}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
+              {data
+                .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+                .map((facility) => {
+                  return (
+                    <tr key={facility.Facility}>
+                      <td>{facility.Center}</td>
+                      <td>{facility.Facility}</td>
+                      <td>{facility.Status}</td>
+                      <td>{facility.City}</td>
+                      <td>{facility.State}</td>
+                      <td>
+                        <input
+                          type="checkbox"
+                          defaultChecked={facility.Visited}
+                          onChange={(e) => handleVisitedClick(e, facility.id)}
+                        />
+                      </td>
+                      <td>
+                        <button
+                          className="button-delete"
+                          onClick={() => handleDeleteClick(facility.id)}
+                        >
+                          DELETE
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </table>
         ) : (
@@ -94,7 +146,7 @@ function Facilities() {
       </div>
     );
   } else if (errors) {
-    return <p>An error occurred fetching data: {errors}</p>;
+    return <p>An error occurred: {errors}</p>;
   } else return <p className="loading">Loading...</p>;
 }
 

@@ -1,14 +1,11 @@
 import { useCallback } from "react";
 import "./App.css";
 import { OktaAuth, toRelativeUrl } from "@okta/okta-auth-js";
-import {
-  BrowserRouter as Router,
-  Navigate,
-  Route,
-  Routes,
-} from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { LoginCallback, Security } from "@okta/okta-react";
 import { Login } from "./components/login";
+import Facilities from "./components/facilities";
+import { RequiredAuth } from "./components/secureRoute";
 
 function App() {
   const oktaAuth = new OktaAuth({
@@ -33,6 +30,9 @@ function App() {
         <Routes>
           <Route path="login/callback" element={<LoginCallback />} />
           <Route path="/" element={<Login />} />
+          <Route path="/facilities" element={<RequiredAuth />}>
+            <Route path="" element={<Facilities />} />
+          </Route>
         </Routes>
       </Security>
     </Router>
@@ -41,4 +41,3 @@ function App() {
 
 export default App;
 //TODO: jwt verify in backend
-//TODO: update db value on visited click

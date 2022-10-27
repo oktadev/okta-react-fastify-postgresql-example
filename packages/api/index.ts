@@ -23,6 +23,10 @@ const fastify: FastifyInstance = Fastify({
   },
 });
 
+fastify.decorate("jwtVerify", (request: any) => {
+  fastify.log.info(`The incoming request is: ${JSON.stringify(request)}`);
+});
+
 fastify.register(fastifyPostgres, {
   connectionString: process.env.CONNECTION_STRING,
 });
