@@ -40,4 +40,3 @@ function App() {
 }
 
 export default App;
-//TODO: jwt verify in backend

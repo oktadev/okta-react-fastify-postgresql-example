@@ -1,7 +1,8 @@
 import fastifyPostgres from "@fastify/postgres";
-import Fastify, { FastifyInstance } from "fastify";
+import Fastify, { FastifyInstance, FastifyRequest } from "fastify";
 import * as dotenv from "dotenv";
 import facilitiesRoutes from "./routes/facilities";
+import { jwtVerifier } from "./utils/jwt-verifier";
 
 dotenv.config();
 
@@ -23,8 +24,12 @@ const fastify: FastifyInstance = Fastify({
   },
 });
 
-fastify.decorate("jwtVerify", (request: any) => {
+fastify.decorate("jwtVerify", (request: FastifyRequest) => {
   fastify.log.info(`The incoming request is: ${JSON.stringify(request)}`);
+});
+
+fastify.addHook("preHandler", async (request, reply, done) => {
+  return jwtVerifier(request, reply);
 });
 
 fastify.register(fastifyPostgres, {

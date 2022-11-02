@@ -1,13 +1,23 @@
+import { FastifyInstance } from "fastify";
 import { FastifyReply, FastifyRequest } from "fastify";
-import { jwtVerifier } from "../../utils/jwt-verifier";
 
-async function facilitiesRoutes(fastify: any, options: any) {
+interface IFacility {
+  Center: string;
+  Facility: string;
+  Status: string;
+  City: string;
+  State: string;
+  Visited: boolean;
+  id: bigint;
+}
+
+async function facilitiesRoutes(fastify: FastifyInstance) {
   const client = await fastify.pg.connect();
 
   fastify.get(
     "/facilities",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      let facilities: any = [];
+      let facilities: IFacility[] = [];
 
       try {
         const { rows } = await client.query("SELECT * FROM facilities");
@@ -71,4 +81,3 @@ async function facilitiesRoutes(fastify: any, options: any) {
 }
 
 export default facilitiesRoutes;
-//TODO: fix types

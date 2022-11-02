@@ -1,5 +1,6 @@
 import { useOktaAuth } from "@okta/okta-react";
 import { useEffect, useState } from "react";
+import { getErrorMessage } from "../utils/get-error-message";
 
 interface IFacility {
   Center: string;
@@ -13,7 +14,7 @@ interface IFacility {
 
 function Facilities() {
   const [data, setData] = useState<IFacility[]>();
-  const [errors, setErrors] = useState();
+  const [errors, setErrors] = useState<string>();
   const { authState, oktaAuth } = useOktaAuth();
 
   const logout = async () => {
@@ -25,22 +26,23 @@ function Facilities() {
   };
 
   useEffect(() => {
-    if (authState?.isAuthenticated) {
-      const apiCall = async () => {
+    console.log({ authState });
+    const apiCall = async () => {
+      if (authState?.isAuthenticated && authState.accessToken?.accessToken) {
         try {
           const response = await fetch("/facilities", {
             headers: {
-              Authorization: "Bearer " + authState.accessToken?.accessToken,
+              Authorization: authState.accessToken.accessToken,
             },
           });
           const data = await response.json();
           setData(data);
-        } catch (errors: any) {
-          setErrors(errors);
+        } catch (error: unknown) {
+          setErrors(getErrorMessage(error));
         }
-      };
-      apiCall();
-    }
+      }
+    };
+    apiCall();
   }, [authState]);
 
   const handleVisitedClick = (
@@ -49,45 +51,45 @@ function Facilities() {
   ) => {
     const url = `/facilities/${facilityId}`;
 
-    if (authState?.isAuthenticated) {
-      const apiCall = async () => {
+    const apiCall = async () => {
+      if (authState?.isAuthenticated && authState.accessToken?.accessToken) {
         try {
           await fetch(url, {
             method: "PATCH",
             headers: {
-              Authorization: "Bearer " + authState.accessToken?.accessToken,
+              Authorization: authState.accessToken?.accessToken,
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ visited: e.target.checked }),
           });
-        } catch (errors: any) {
-          setErrors(errors.message);
+        } catch (error: unknown) {
+          setErrors(getErrorMessage(error));
         }
-      };
-      apiCall();
-    }
+      }
+    };
+    apiCall();
   };
 
   const handleDeleteClick = (facilityId: bigint) => {
     const url = `/facilities/${facilityId}`;
 
-    if (authState?.isAuthenticated) {
-      const apiCall = async () => {
+    const apiCall = async () => {
+      if (authState?.isAuthenticated && authState.accessToken?.accessToken) {
         try {
           await fetch(url, {
             method: "DELETE",
             headers: {
-              Authorization: "Bearer " + authState.accessToken?.accessToken,
+              Authorization: authState.accessToken?.accessToken,
             },
           });
 
           setData(data?.filter((row) => row.id !== facilityId));
-        } catch (errors: any) {
-          setErrors(errors.message);
+        } catch (error: unknown) {
+          setErrors(getErrorMessage(error));
         }
-      };
-      apiCall();
-    }
+      }
+    };
+    apiCall();
   };
 
   if (data && !errors) {
