@@ -22,7 +22,7 @@ export const RequiredAuth: React.FC = () => {
   }, [oktaAuth, authState?.isAuthenticated, authState]);
 
   if (!authState || !authState?.isAuthenticated) {
-    return <div>Loading...</div>;
+    return <p className="loading">Loading...</p>;
   }
 
   return <Outlet />;

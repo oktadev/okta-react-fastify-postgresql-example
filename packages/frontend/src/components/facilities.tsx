@@ -26,7 +26,6 @@ function Facilities() {
   };
 
   useEffect(() => {
-    console.log({ authState });
     const apiCall = async () => {
       if (authState?.isAuthenticated && authState.accessToken?.accessToken) {
         try {
@@ -92,7 +91,7 @@ function Facilities() {
     apiCall();
   };
 
-  if (data && !errors) {
+  if (data && !errors && authState?.isAuthenticated) {
     return (
       <div className="facilities-wrapper">
         <button onClick={logout} className="logout-button">

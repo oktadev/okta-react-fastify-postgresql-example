@@ -24,16 +24,16 @@ const fastify: FastifyInstance = Fastify({
   },
 });
 
+fastify.register(fastifyPostgres, {
+  connectionString: process.env.CONNECTION_STRING,
+});
+
 fastify.decorate("jwtVerify", (request: FastifyRequest) => {
   fastify.log.info(`The incoming request is: ${JSON.stringify(request)}`);
 });
 
 fastify.addHook("preHandler", async (request, reply, done) => {
   return jwtVerifier(request, reply);
-});
-
-fastify.register(fastifyPostgres, {
-  connectionString: process.env.CONNECTION_STRING,
 });
 
 fastify.register(facilitiesRoutes);
