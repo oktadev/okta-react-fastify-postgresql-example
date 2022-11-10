@@ -12,6 +12,7 @@
   "dependencies": {
     "@okta/jwt-verifier": "^2.6.0",
     "dotenv": "^16.0.2",
+    "fastify": "^4.9.2",
     "fastify-postgres": "^3.7.0",
     "pg": "^8.8.0"
   },
