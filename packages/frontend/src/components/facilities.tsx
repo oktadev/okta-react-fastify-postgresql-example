@@ -1,6 +1,5 @@
 import { useOktaAuth } from "@okta/okta-react";
 import { useEffect, useState } from "react";
-import { getErrorMessage } from "../utils/get-error-message";
 
 interface IFacility {
   Center: string;
@@ -10,6 +9,11 @@ interface IFacility {
   State: string;
   Visited: boolean;
   id: bigint;
+}
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message;
+  return String(error);
 }
 
 function Facilities() {
