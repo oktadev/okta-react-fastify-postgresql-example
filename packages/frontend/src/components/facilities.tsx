@@ -31,7 +31,7 @@ function Facilities() {
         try {
           const response = await fetch("/facilities", {
             headers: {
-              Authorization: authState.accessToken.accessToken,
+              Authorization: `Bearer ${authState.accessToken.accessToken}`,
             },
           });
           const data = await response.json();
@@ -56,7 +56,7 @@ function Facilities() {
           await fetch(url, {
             method: "PATCH",
             headers: {
-              Authorization: authState.accessToken?.accessToken,
+              Authorization: `Bearer ${authState.accessToken.accessToken}`,
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ visited: e.target.checked }),
@@ -78,7 +78,7 @@ function Facilities() {
           await fetch(url, {
             method: "DELETE",
             headers: {
-              Authorization: authState.accessToken?.accessToken,
+              Authorization: `Bearer ${authState.accessToken.accessToken}`,
             },
           });
 
