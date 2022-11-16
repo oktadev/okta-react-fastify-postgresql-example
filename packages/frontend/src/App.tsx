@@ -11,8 +11,7 @@ function App() {
   const oktaAuth = new OktaAuth({
     issuer: process.env.REACT_APP_OKTA_ISSUER,
     clientId: process.env.REACT_APP_OKTA_CLIENT_ID,
-    redirectUri:
-      process.env.REACT_APP_OKTA_BASE_REDIRECT_URI + "/login/callback",
+    redirectUri: process.env.REACT_APP_OKTA_BASE_REDIRECT_URI + "/callback",
   });
 
   const restoreOriginalUri = useCallback(
@@ -28,7 +27,7 @@ function App() {
     <Router>
       <Security oktaAuth={oktaAuth} restoreOriginalUri={restoreOriginalUri}>
         <Routes>
-          <Route path="login/callback" element={<LoginCallback />} />
+          <Route path="/callback" element={<LoginCallback />} />
           <Route path="/" element={<Login />} />
           <Route path="/facilities" element={<RequiredAuth />}>
             <Route path="" element={<Facilities />} />
