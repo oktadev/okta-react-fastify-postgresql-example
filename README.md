@@ -2,7 +2,7 @@
 
 This example app shows how to create a React frontend that calls a Fastify API backend with authentication.
 
-Please read [How to Build a Secure React and Fastify API App](https://developer.okta.com/blog/2022/03/15/react-vite-number-converter) to see how this app was created.
+Please read [How to Build a Secure React and Fastify API App](https://developer.okta.com/blog/2022/12/06/react-fastify-postgres) to see how this app was created.
 
 **Prerequisites:**
 
